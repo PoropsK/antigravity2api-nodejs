@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import { generateAssistantResponse, getAvailableModels } from '../api/client.js';
 import { generateRequestBody } from '../utils/utils.js';
 import logger from '../utils/logger.js';
@@ -8,14 +7,6 @@ import config from '../config/config.js';
 const app = express();
 
 app.use(express.json({ limit: config.security.maxRequestSize }));
-
-// 啟用 CORS 支援
-app.use(cors({
-  origin: '*', // 允許所有來源，生產環境建議設定特定域名
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
-}));
 
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
