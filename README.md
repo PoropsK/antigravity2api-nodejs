@@ -57,6 +57,39 @@ npm start
 
 服务将在 `http://localhost:8045` 启动。
 
+## Docker 部署
+
+本專案支援 Docker 部署，並提供多架構 (amd64/arm64) 支援。
+
+### 1. 使用 GitHub Container Registry
+
+```bash
+docker run -d \
+  --name antigravity-api \
+  -p 8045:8045 \
+  -v $(pwd)/config.json:/app/config.json \
+  -v $(pwd)/data:/app/data \
+  ghcr.io/<您的使用者名稱>/antigravity2api-nodejs:main
+```
+
+### 2. 本地建置與執行
+
+```bash
+# 建置映像檔
+docker build -t antigravity-api .
+
+# 執行容器
+docker run -d \
+  --name antigravity-api \
+  -p 8045:8045 \
+  -v $(pwd)/config.json:/app/config.json \
+  -v $(pwd)/data:/app/data \
+  antigravity-api
+```
+
+> **注意**：執行 Docker 容器前，請確保當前目錄下已有 `config.json` 和 `data/` 目錄（且包含有效的 `accounts.json`）。
+
+
 ## API 使用
 
 ### 获取模型列表
