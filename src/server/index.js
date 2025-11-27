@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { generateAssistantResponse, getAvailableModels } from '../api/client.js';
 import { generateRequestBody } from '../utils/utils.js';
 import logger from '../utils/logger.js';
@@ -7,6 +8,14 @@ import config from '../config/config.js';
 const app = express();
 
 app.use(express.json({ limit: config.security.maxRequestSize }));
+
+// 啟用 CORS 支援
+app.use(cors({
+  origin: '*', // 允許所有來源，生產環境建議設定特定域名
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
+}));
 
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
@@ -49,25 +58,25 @@ app.get('/v1/models', async (req, res) => {
 });
 
 app.post('/v1/chat/completions', async (req, res) => {
-  const { messages, model, stream = true, tools, ...params} = req.body;
+  const { messages, model, stream = true, tools, ...params } = req.body;
   try {
-    
+
     if (!messages) {
       return res.status(400).json({ error: 'messages is required' });
     }
-    
+
     const requestBody = await generateRequestBody(messages, model, params, tools);
     //console.log(JSON.stringify(requestBody,null,2));
-    
+
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      
+
       const id = `chatcmpl-${Date.now()}`;
       const created = Math.floor(Date.now() / 1000);
       let hasToolCall = false;
-      
+
       await generateAssistantResponse(requestBody, (data) => {
         if (data.type === 'tool_calls') {
           hasToolCall = true;
@@ -88,7 +97,7 @@ app.post('/v1/chat/completions', async (req, res) => {
           })}\n\n`);
         }
       });
-      
+
       res.write(`data: ${JSON.stringify({
         id,
         object: 'chat.completion.chunk',
@@ -108,12 +117,12 @@ app.post('/v1/chat/completions', async (req, res) => {
           fullContent += data.content;
         }
       });
-      
+
       const message = { role: 'assistant', content: fullContent };
       if (toolCalls.length > 0) {
         message.tool_calls = toolCalls;
       }
-      
+
       res.json({
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
