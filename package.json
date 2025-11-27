@@ -10,7 +10,12 @@
     "refresh": "node scripts/refresh-tokens.js",
     "dev": "node --watch src/server/index.js"
   },
-  "keywords": ["antigravity", "openai", "api", "proxy"],
+  "keywords": [
+    "antigravity",
+    "openai",
+    "api",
+    "proxy"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
